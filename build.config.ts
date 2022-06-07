@@ -1,6 +1,10 @@
-import fs from 'fs-extra'
+// import { copy, mkdirp, readFile, writeFile } from 'fs-extra'
+// import { dirname, resolve } from 'pathe'
+import { copy, mkdirp, readFile, writeFile } from 'fs-extra'
 import { dirname, resolve } from 'pathe'
 import { defineBuildConfig } from 'unbuild'
+
+const shikiDir = dirname(require.resolve('shiki/package.json'))
 
 export default defineBuildConfig({
   declaration: false,
@@ -13,37 +17,41 @@ export default defineBuildConfig({
       values: {
         'const isBrowser = ': 'const isBrowser = true ||',
         'window': '({})',
-        "await fetch(": 'await (globalThis.__shiki_fetch__||globalThis.fetch)('
-      }
+        'await fetch(': 'await (globalThis.__shiki_fetch__||globalThis.fetch)(',
+      },
     },
   },
   entries: [
     './src/shiki',
-    './src/shiki.node'
+    './src/shiki.node',
   ],
   hooks: {
-    async 'build:before'(ctx) {
-      const genDir = resolve(ctx.options.rootDir, 'gen')
-      await fs.mkdirp(genDir)
+    'build:before': async ({ options: { rootDir } }) => {
+      const genDir = resolve(rootDir, 'gen')
+      await mkdirp(genDir)
 
       const shiki = await import('shiki')
       const assets = [
-        ...shiki.BUNDLED_LANGUAGES.map(lang => `languages/${lang.path}`),
-        ...shiki.BUNDLED_THEMES.map(theme => `themes/${theme}.json`)
-      ]
-      const assetsCode = `export default {\n${assets.map(asset => `  '${asset}': () => import('shiki/${asset}')`).join(',\n')}\n}`
-      await fs.writeFile(resolve(genDir, 'assets.ts'), assetsCode)
+        ...shiki.BUNDLED_LANGUAGES.map(({ path }) => `languages/${path}`),
+        ...shiki.BUNDLED_THEMES.map(theme => `themes/${theme}.json`),
+      ].map(asset => `  '${asset}': () => import('shiki/${asset}')`)
 
-      const buff = await fs.readFile('./node_modules/shiki/dist/onig.wasm')
-      await fs.writeFile(resolve(genDir, 'onig.ts'), `export default () => "${buff.toString('base64')}"`)
+      await writeFile(resolve(genDir, 'assets.ts'), `export default {\n${assets.join(',\n')}\n}`)
+        .catch(console.error)
+
+      await readFile(resolve(shikiDir, 'dist/onig.wasm'), 'base64')
+        .then(async onigasm => await writeFile(
+          resolve(genDir, 'onig.ts'),
+            `export default () => "${onigasm}"`,
+            'utf-8',
+        ).catch(console.error))
+        .catch(console.error)
     },
-    async 'rollup:done'(ctx) {
-      const shikiDir = dirname(require.resolve('shiki/package.json'))
-      const assetsDir = resolve(ctx.options.outDir, 'assets')
-      for (const item of ['languages', 'themes', 'dist/onig.wasm']) {
-        await fs.copy(resolve(shikiDir, item), resolve(assetsDir, item))
-      }
-      await fs.copy(resolve(shikiDir, 'dist/index.d.ts'), resolve(ctx.options.outDir, 'shiki.d.ts'))
-    }
-  }
+    'rollup:done': async ({ options: { outDir } }) => {
+      for await (const item of ['languages', 'themes', 'dist/onig.wasm'])
+        await copy(resolve(shikiDir, item), resolve(outDir, 'assets', item))
+
+      await copy(resolve(shikiDir, 'dist/index.d.ts'), resolve(outDir, 'shiki.d.ts'))
+    },
+  },
 })

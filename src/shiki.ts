@@ -1,7 +1,17 @@
-import { setCDN } from 'shiki'
-import { version } from '../package.json'
+import {
+  BUNDLED_LANGUAGES,
+  BUNDLED_THEMES,
+  FontStyle,
+  getHighlighter,
+  loadTheme,
+  renderToHtml,
+  setCDN,
+  setWasm,
+  toShikiTheme,
+} from 'shiki'
+import pkg from '../package.json'
 
-setCDN(`https://cdn.jsdelivr.net/npm/shikey@${version}/dist/assets/`)
+setCDN(`https://cdn.jsdelivr.net/npm/shikey@${pkg.version}/dist/assets/`)
 
 export {
   BUNDLED_LANGUAGES,
@@ -11,7 +21,7 @@ export {
   loadTheme,
   renderToHtml,
   setCDN,
-  setOnigasmWASM,
+  setWasm as setOnigasmWASM,
   setWasm,
-  toShikiTheme
-} from 'shiki'
+  toShikiTheme,
+}

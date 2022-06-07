@@ -1,0 +1,57 @@
+{
+  "name": "shikey",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "Nicholas Berlette <nick@berlette.com>",
+  "repository": "nberlette/shikey",
+  "readme": "https://github.com/nberlette/shikey#readme",
+  "homepage": "https://github.com/nberlette/shikey#readme",
+  "bugs": "https://github.com/nberlette/shikey/issues",
+  "description": "Standalone build of shiki fully compatible with all ESM environments.",
+  "type": "module",
+  "types": "./dist/shiki.d.ts",
+  "main": "./dist/shiki.node.mjs",
+  "module": "./dist/shiki.mjs",
+  "exports": {
+    ".": {
+      "node": "./dist/shiki.node.mjs",
+      "default": "./dist/shiki.mjs"
+    },
+    "./shiki/*": "./dist/shiki/*"
+  },
+  "packageManager": "pnpm@7.1.9",
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/shiki.d.ts",
+        "node": "./dist/shiki.node.mjs",
+        "import": "./dist/shiki.mjs",
+        "default": "./dist/shiki.mjs"
+      },
+      "./shiki/*": "./dist/shiki/*",
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "prepack": "unbuild",
+    "test": "node ./test/test.mjs",
+    "release": "standard-version && pnpm publish && git push --follow-tags",
+    "pretest": "unbuild"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "9.0.13",
+    "esm": "3.2.25",
+    "fs-extra": "^10.1.0",
+    "node-fetch": "^3.2.5",
+    "pathe": "0.3.0",
+    "shiki": "^0.10.1",
+    "standard-version": "^9.5.0",
+    "typescript": "4.7.3",
+    "unbuild": "^0.7.4"
+  }
+}

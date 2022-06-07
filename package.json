@@ -3,22 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "author": "Nicholas Berlette <nick@berlette.com>",
-  "repository": "nberlette/shikey",
-  "readme": "https://github.com/nberlette/shikey#readme",
-  "homepage": "https://github.com/nberlette/shikey#readme",
-  "bugs": "https://github.com/nberlette/shikey/issues",
-  "description": "Standalone build of shiki fully compatible with all ESM environments.",
   "type": "module",
-  "types": "./dist/shiki.d.ts",
-  "main": "./dist/shiki.node.mjs",
-  "module": "./dist/shiki.mjs",
-  "exports": {
-    ".": {
-      "node": "./dist/shiki.node.mjs",
-      "default": "./dist/shiki.mjs"
-    },
-    "./shiki/*": "./dist/shiki/*"
-  },
   "packageManager": "pnpm@7.1.9",
   "publishConfig": {
     "access": "public",
@@ -33,25 +18,61 @@
       "./package.json": "./package.json"
     }
   },
+  "description": "Standalone build of shiki fully compatible with all ESM environments.",
+  "homepage": "https://github.com/nberlette/shikey#readme",
+  "repository": "nberlette/shikey",
+  "readme": "https://github.com/nberlette/shikey#readme",
+  "bugs": "https://github.com/nberlette/shikey/issues",
+  "scripts": {
+    "preinstall": "npx -y only-allow pnpm",
+    "build": "unbuild",
+    "prepack": "nr build",
+    "test": "node test",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "clean": "npx -y rimraf gen dist",
+    "preversion": "nr lint:fix && nr lint && nr test",
+    "release:bump": "npx -y bumpp --commit '📦 %s' --tag --push --all",
+    "release:publish": "pnpm publish --access public",
+    "release": "nr release:bump && nr release:publish && nr clean"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@brlt"
+    ],
+    "rules": {
+      "no-console": "off"
+    },
+    "ignorePatterns": [
+      "gen",
+      "dist",
+      "node_modules"
+    ]
+  },
+  "types": "./dist/shiki.d.ts",
+  "exports": {
+    ".": {
+      "node": "./dist/shiki.node.mjs",
+      "default": "./dist/shiki.mjs"
+    },
+    "./shiki/*": "./dist/shiki/*"
+  },
+  "main": "./dist/shiki.node.mjs",
+  "module": "./dist/shiki.mjs",
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "unbuild",
-    "prepack": "unbuild",
-    "test": "node ./test/test.mjs",
-    "release": "standard-version && pnpm publish && git push --follow-tags",
-    "pretest": "unbuild"
-  },
   "devDependencies": {
+    "@brlt/eslint-config": "0.0.4",
+    "@brlt/n": "0.1.1",
     "@types/fs-extra": "9.0.13",
-    "esm": "3.2.25",
-    "fs-extra": "^10.1.0",
-    "node-fetch": "^3.2.5",
+    "@types/node": "17.0.40",
+    "eslint": "8.17.0",
+    "fs-extra": "10.1.0",
+    "node-fetch": "3.2.5",
     "pathe": "0.3.0",
-    "shiki": "^0.10.1",
-    "standard-version": "^9.5.0",
+    "shiki": "0.10.1",
     "typescript": "4.7.3",
-    "unbuild": "^0.7.4"
+    "unbuild": "0.7.4"
   }
 }
